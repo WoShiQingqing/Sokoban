@@ -1,12 +1,11 @@
 package sokoban.controller;
 
 import java.util.List;
-
 import sokoban.MainApp;
+import sokoban.model.Direction;
 import sokoban.model.GameMap;
 import sokoban.model.Level;
 
-// Coordinates the current level and basic game page actions
 public class GameController {
 
     private final MainApp mainApp;
@@ -18,7 +17,6 @@ public class GameController {
         this.mainApp = mainApp;
         this.levels = levels;
         this.currentLevelIndex = levelIndex;
-        // Build the current level scaffold right away
         this.gameMap = levels.get(levelIndex).createGameMap();
     }
 
@@ -38,7 +36,6 @@ public class GameController {
         if (!hasNextLevel()) {
             return false;
         }
-        // Move straight to the next level without changing the public API later
         currentLevelIndex++;
         gameMap = levels.get(currentLevelIndex).createGameMap();
         return true;
@@ -46,6 +43,12 @@ public class GameController {
 
     public void restartCurrentLevel() {
         gameMap = levels.get(currentLevelIndex).createGameMap();
+    }
+
+    public void move(Direction direction) {
+        if (gameMap != null) {
+            gameMap.movePlayer(direction);
+        }
     }
 
     public GameMap getGameMap() {
