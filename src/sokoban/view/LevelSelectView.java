@@ -37,8 +37,9 @@ public class LevelSelectView {
             int levelIndex = index;
             Level level = levels.get(index);
             // Bind the level name and index here so the click handler stays tiny
-            Button button = new Button((index + 1) + ". " + level.getName());
-            button.setPrefSize(200, 60);
+            String buttonText = String.format("%d. %s [%s]", (index + 1), level.getName(), level.getDifficulty());
+            Button button = new Button(buttonText);
+            button.setPrefSize(250, 60);
             button.setStyle(
                 "-fx-background-color: #E2E8F0;"
                     + "-fx-font-size: 14px;"
