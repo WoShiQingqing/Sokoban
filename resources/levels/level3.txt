@@ -1,4 +1,5 @@
 name=Two Targets
+difficulty=Medium
 ########
 #   .  #
 # $$   #
