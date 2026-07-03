@@ -1,0 +1,8 @@
+name=Narrow Hall
+difficulty=Medium
+######
+#    #
+#  # ###
+# .$   #
+# .$ @ #
+########
