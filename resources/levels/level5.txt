@@ -1,0 +1,8 @@
+name=Box Trap
+difficulty=Hard
+#######
+# .   #
+#  $  #
+# .$$@#
+#  .  #
+#######
