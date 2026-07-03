@@ -1,4 +1,5 @@
 name=Corner Push
+difficulty=Easy
 ########
 #  .   #
 #  $@  #
