@@ -1,14 +1,14 @@
 package sokoban.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sokoban.entity.Box;
 import sokoban.entity.Player;
 import sokoban.entity.Target;
 import sokoban.entity.Wall;
 
-import java.util.ArrayList;
-import java.util.List;
-
-// Basic map state for one Sokoban level
+// Stores the current objects and movement state for one Sokoban level
 public class GameMap {
 
     private final Level sourceLevel;
@@ -18,15 +18,13 @@ public class GameMap {
     private int moveCount;
     private GameState gameState;
 
-    // 游戏实体集合
-    private List<Wall> walls;
-    private List<Target> targets;
-    private List<Box> boxes;
+    private final List<Wall> walls;
+    private final List<Target> targets;
+    private final List<Box> boxes;
     private Player player;
 
-    // Initial snapshot, used for resetting to restore the starting state
     private Position playerStartPos;
-    private List<Position> boxStartPositions;
+    private final List<Position> boxStartPositions;
 
     public GameMap(Level level) {
         this.sourceLevel = level;
@@ -34,130 +32,124 @@ public class GameMap {
         this.height = level.getHeight();
         this.layoutRows = level.getRows();
         this.gameState = GameState.READY;
-
-        // Initialize the entity container and parse the map
-        walls = new ArrayList<>();
-        targets = new ArrayList<>();
-        boxes = new ArrayList<>();
-        boxStartPositions = new ArrayList<>();
+        this.walls = new ArrayList<>();
+        this.targets = new ArrayList<>();
+        this.boxes = new ArrayList<>();
+        this.boxStartPositions = new ArrayList<>();
         parseLevelLayout();
         saveInitialState();
     }
 
-    // Core: Parse level text # . $ @ * +
     private void parseLevelLayout() {
         for (int row = 0; row < layoutRows.size(); row++) {
             String line = layoutRows.get(row);
-            for (int col = 0; col < line.length(); col++) {
-                char symbol = line.charAt(col);
-                Position pos = new Position(row, col);
+            for (int column = 0; column < line.length(); column++) {
+                char symbol = line.charAt(column);
+                Position position = new Position(row, column);
                 switch (symbol) {
-                    case '#' -> walls.add(new Wall(pos));
-                    case '@' -> player = new Player(pos);
-                    case '$' -> boxes.add(new Box(pos));
-                    case '.' -> targets.add(new Target(pos));
-                    case '*' -> { // The box is at the target point
-                        targets.add(new Target(pos));
-                        boxes.add(new Box(pos));
+                    case '#' -> walls.add(new Wall(position));
+                    case '@' -> player = new Player(position);
+                    case '$' -> boxes.add(new Box(position));
+                    case '.' -> targets.add(new Target(position));
+                    case '*' -> {
+                        targets.add(new Target(position));
+                        boxes.add(new Box(position));
                     }
-                    case '+' -> { // The player is at the target point
-                        targets.add(new Target(pos));
-                        player = new Player(pos);
+                    case '+' -> {
+                        targets.add(new Target(position));
+                        player = new Player(position);
+                    }
+                    default -> {
+                        // Spaces are normal floor tiles and do not need stored objects
                     }
                 }
             }
         }
-    }
-
-    // Save the initial starting coordinates and restore them upon reset
-    private void saveInitialState() {
-        playerStartPos = new Position(player.getRow(), player.getColumn());
-        boxStartPositions.clear();
-        for (Box b : boxes) {
-            boxStartPositions.add(new Position(b.getRow(), b.getColumn()));
+        if (player == null) {
+            throw new IllegalArgumentException("Level must contain a player start position");
         }
     }
 
-    // Main logic for player movement; returning true means the movement is valid
+    private void saveInitialState() {
+        // Store initial positions so reset can rebuild the same level state
+        playerStartPos = new Position(player.getRow(), player.getColumn());
+        boxStartPositions.clear();
+        for (Box box : boxes) {
+            boxStartPositions.add(new Position(box.getRow(), box.getColumn()));
+        }
+    }
+
     public boolean movePlayer(Direction direction) {
-        markPlaying();
+        if (direction == null || gameState == GameState.COMPLETED) {
+            return false;
+        }
+
         Position playerNextPos = player.getPosition().translate(direction);
-        // 1. A wall is ahead, movement is blocked
         if (isWallAt(playerNextPos)) {
             return false;
         }
 
-        // 2. Determine whether there is a box ahead
         Box hitBox = getBoxAtPosition(playerNextPos);
         if (hitBox != null) {
-            // Next coordinate of the box
             Position boxNextPos = playerNextPos.translate(direction);
-            // If there is a wall or another box in front of the box → it cannot be pushed
             if (isWallAt(boxNextPos) || getBoxAtPosition(boxNextPos) != null) {
                 return false;
             }
-            // Push the box
             hitBox.setPosition(boxNextPos);
         }
 
-        // 3. Execute player movement and add 1 to step count
         player.setPosition(playerNextPos);
         incrementMoveCount();
-
-        // 4. Detect whether the level is cleared after moving
+        markPlaying();
         if (isCompleted()) {
             markCompleted();
         }
         return true;
     }
 
-    // Reset the level to its initial state
     public void reset() {
         moveCount = 0;
         gameState = GameState.READY;
-        // Restore the player's initial position
         player.setPosition(playerStartPos);
-        // Restore the initial coordinates of all boxes
-        for (int i = 0; i < boxes.size(); i++) {
-            boxes.get(i).setPosition(boxStartPositions.get(i));
+        for (int index = 0; index < boxes.size(); index++) {
+            boxes.get(index).setPosition(boxStartPositions.get(index));
         }
     }
 
-    // Determine whether all boxes are at the target points → Clear the level
     public boolean isCompleted() {
-        int matchCount = 0;
+        if (boxes.size() != targets.size()) {
+            return false;
+        }
+
         List<Position> targetPositions = targets.stream()
-                .map(t -> t.getPosition())
-                .toList();
+            .map(Target::getPosition)
+            .toList();
         for (Box box : boxes) {
-            if (targetPositions.contains(box.getPosition())) {
-                matchCount++;
+            if (!targetPositions.contains(box.getPosition())) {
+                return false;
             }
         }
-        return matchCount == targets.size();
+        return true;
     }
 
-    // Assistant: Is this coordinate a wall?
-    public boolean isWallAt(Position pos) {
-        for (Wall w : walls) {
-            if (w.getPosition().equals(pos)) {
+    public boolean isWallAt(Position position) {
+        for (Wall wall : walls) {
+            if (wall.getPosition().equals(position)) {
                 return true;
             }
         }
         return false;
     }
 
-    // Helper: Retrieve the crate at the specified coordinates; return null if none exists
-    public Box getBoxAtPosition(Position pos) {
-        for (Box b : boxes) {
-            if (b.getPosition().equals(pos)) {
-                return b;
+    public Box getBoxAtPosition(Position position) {
+        for (Box box : boxes) {
+            if (box.getPosition().equals(position)) {
+                return box;
             }
         }
         return null;
     }
 
-    // External getter for rendering by GameView
     public List<Wall> getWalls() {
         return walls;
     }
@@ -209,4 +201,4 @@ public class GameMap {
     public void incrementMoveCount() {
         moveCount++;
     }
-   }
+}
