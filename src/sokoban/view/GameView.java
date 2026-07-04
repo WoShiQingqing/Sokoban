@@ -26,7 +26,7 @@ import sokoban.model.Direction;
 import sokoban.model.GameMap;
 import sokoban.model.Level;
 
-// Core game page: Replaced the text preview with a real 2D board rendering
+// Main game page that draws the board and sends player input to the controller
 public class GameView {
     private final GameController controller;
     private final BorderPane root;
@@ -47,7 +47,7 @@ public class GameView {
         this.nextButton = new Button("Next Level");
         
         configureLayout();
-        setupKeyListener(); 
+        setupKeyListener();
         refresh();
         this.scene = new Scene(root, MainApp.WINDOW_WIDTH, MainApp.WINDOW_HEIGHT);
     }
@@ -86,11 +86,7 @@ public class GameView {
         });
         
         nextButton.setDisable(!controller.hasNextLevel());
-        nextButton.setOnAction(event -> {
-            if (controller.openNextLevel()) {
-                // Controller handles the page transition
-            }
-        });
+        nextButton.setOnAction(event -> openNextLevel());
         
         Button menuButton = new Button("Back To Menu");
         menuButton.setOnAction(event -> controller.goBackToMenu());
@@ -108,55 +104,46 @@ public class GameView {
     
     private void setupKeyListener() {
         root.setOnKeyPressed(event -> {
-            GameMap gameMap = controller.getGameMap();
-            
-            if (gameMap != null && gameMap.isCompleted()) {
-                return;
-            }
-            
             KeyCode code = event.getCode();
-            boolean moved = false; 
+            boolean moved = false;
 
             switch (code) {
                 case UP:
                 case W:
-                    controller.move(Direction.UP); moved = true;
+                    moved = controller.move(Direction.UP);
                     break;
                 case DOWN:
                 case S:
-                    controller.move(Direction.DOWN); moved = true;
+                    moved = controller.move(Direction.DOWN);
                     break;
                 case LEFT:
                 case A:
-                    controller.move(Direction.LEFT); moved = true;
+                    moved = controller.move(Direction.LEFT);
                     break;
                 case RIGHT:
                 case D:
-                    controller.move(Direction.RIGHT); moved = true;
+                    moved = controller.move(Direction.RIGHT);
                     break;
                 case R:
-                    controller.restartCurrentLevel(); 
+                    controller.restartCurrentLevel();
                     break;
                 case ESCAPE:
-                    controller.goBackToMenu(); 
-                    return; 
+                    controller.goBackToMenu();
+                    return;
                 default:
-                    return; 
+                    return;
             }
-            
-            refresh(); 
-            
+
+            refresh();
+
+            GameMap gameMap = controller.getGameMap();
             if (moved && gameMap != null && gameMap.isCompleted()) {
                 showLevelCompletedAlert();
             }
         });
     }
 
-    /**
-     * Displays an informational alert dialog to notify the player 
-     * that they have successfully completed the current level.
-     * Prompts the user to proceed to the next stage upon closing.
-     */
+    // Show a simple completion dialog after the player solves the current level
     private void showLevelCompletedAlert() {
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setTitle("Level Completed!");
@@ -165,9 +152,16 @@ public class GameView {
         
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                requestFocusForGame(); 
+                requestFocusForGame();
             }
         });
+    }
+
+    private void openNextLevel() {
+        if (controller.openNextLevel()) {
+            refresh();
+            requestFocusForGame();
+        }
     }
 
     private void refresh() {
@@ -188,13 +182,14 @@ public class GameView {
         } else {
             statusLabel.setText("Status: Playing");
             statusLabel.setStyle("-fx-text-fill: #334155; -fx-font-size: 14px;");
-            nextButton.setStyle(""); 
+            nextButton.setStyle("");
         }
+        nextButton.setDisable(!(gameMap.isCompleted() && controller.hasNextLevel()));
         
         boardGrid.getChildren().clear();
         
-        int rows = gameMap.getHeight(); 
-        int cols = gameMap.getWidth();  
+        int rows = gameMap.getHeight();
+        int cols = gameMap.getWidth();
         
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
@@ -240,40 +235,42 @@ public class GameView {
         StackPane cell = new StackPane();
         cell.setPrefSize(40, 40);
         
-        Rectangle floor = new Rectangle(40, 40, Color.web("#CBD5E1")); 
+        Rectangle floor = new Rectangle(40, 40, Color.web("#CBD5E1"));
         floor.setStroke(Color.web("#94A3B8"));
         cell.getChildren().add(floor);
         
         switch (symbol) {
-            case '#': 
+            case '#':
                 Rectangle wall = new Rectangle(40, 40, Color.web("#475569"));
                 cell.getChildren().add(wall);
                 break;
-            case '.': 
+            case '.':
                 Circle target = new Circle(6, Color.web("#EF4444"));
                 cell.getChildren().add(target);
                 break;
-            case '$': 
+            case '$':
                 Rectangle box = new Rectangle(30, 30, Color.web("#D97706"));
-                box.setArcWidth(5); box.setArcHeight(5); 
+                box.setArcWidth(5);
+                box.setArcHeight(5);
                 cell.getChildren().add(box);
                 break;
-            case '*': 
-                Rectangle doneBox = new Rectangle(30, 30, Color.web("#10B981")); 
-                doneBox.setArcWidth(5); doneBox.setArcHeight(5);
+            case '*':
+                Rectangle doneBox = new Rectangle(30, 30, Color.web("#10B981"));
+                doneBox.setArcWidth(5);
+                doneBox.setArcHeight(5);
                 cell.getChildren().add(doneBox);
                 break;
-            case '@': 
-                Circle player = new Circle(14, Color.web("#3B82F6")); 
+            case '@':
+                Circle player = new Circle(14, Color.web("#3B82F6"));
                 cell.getChildren().add(player);
                 break;
-            case '+': 
+            case '+':
                 Circle targetSpot = new Circle(6, Color.web("#EF4444"));
                 Circle playerOnTarget = new Circle(14, Color.web("#3B82F6"));
                 playerOnTarget.setOpacity(0.8);
                 cell.getChildren().addAll(targetSpot, playerOnTarget);
                 break;
-            case ' ': 
+            case ' ':
             default:
                 break;
         }

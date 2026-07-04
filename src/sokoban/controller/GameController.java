@@ -45,10 +45,11 @@ public class GameController {
         gameMap = levels.get(currentLevelIndex).createGameMap();
     }
 
-    public void move(Direction direction) {
-        if (gameMap != null) {
-            gameMap.movePlayer(direction);
+    public boolean move(Direction direction) {
+        if (gameMap == null) {
+            return false;
         }
+        return gameMap.movePlayer(direction);
     }
 
     public GameMap getGameMap() {
