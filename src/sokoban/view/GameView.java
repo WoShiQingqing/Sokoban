@@ -115,7 +115,7 @@ public class GameView {
             }
             
             KeyCode code = event.getCode();
-            boolean moved = false; // Add flag to check if player moved
+            boolean moved = false; 
 
             switch (code) {
                 case UP:
@@ -146,13 +146,17 @@ public class GameView {
             
             refresh(); 
             
-            // Check for completion after refresh
             if (moved && gameMap != null && gameMap.isCompleted()) {
                 showLevelCompletedAlert();
             }
         });
     }
 
+    /**
+     * Displays an informational alert dialog to notify the player 
+     * that they have successfully completed the current level.
+     * Prompts the user to proceed to the next stage upon closing.
+     */
     private void showLevelCompletedAlert() {
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setTitle("Level Completed!");
@@ -161,7 +165,6 @@ public class GameView {
         
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                // Focus will return to the scene, user can press Next Level manually
                 requestFocusForGame(); 
             }
         });
@@ -174,7 +177,6 @@ public class GameView {
         levelLabel.setText("Level " + controller.getCurrentLevelNumber() + " / " + controller.getTotalLevels()
             + " - " + controller.getLevelName());
         
-        // Changed getStepCount() to getMoveCount() to match GameMap.java
         stepCountLabel.setText("Steps: " + gameMap.getMoveCount());
         
         if (gameMap.isCompleted()) {
@@ -191,12 +193,11 @@ public class GameView {
         
         boardGrid.getChildren().clear();
         
-        int rows = gameMap.getHeight(); // Note: Changed to getHeight() which is what GameMap has
-        int cols = gameMap.getWidth();  // Note: Changed to getWidth() which is what GameMap has
+        int rows = gameMap.getHeight(); 
+        int cols = gameMap.getWidth();  
         
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
-                // Find symbol by checking entities in gameMap
                 char symbol = ' ';
                 sokoban.model.Position pos = new sokoban.model.Position(r, c);
                 
