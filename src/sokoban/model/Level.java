@@ -2,13 +2,23 @@ package sokoban.model;
 import java.util.ArrayList;
 import java.util.List;
 
-// Immutable level data loaded from text resources
+/**
+ * Represents a single, immutable level in the Sokoban game.
+ * This class stores the essential data required to construct a game map,
+ * including the level's name, difficulty setting, and layout structure.
+ */
 public class Level {
     private final String name;
-    private final String difficulty; //difficulty attribute
+    private final String difficulty; 
     private final List<String> rows;
 
-    // Modified constructor to include the difficulty parameter
+    /**
+     * Constructs a new Level instance.
+     * 
+     * @param name       The title of the level.
+     * @param difficulty The difficulty classification (e.g., Easy, Medium, Hard).
+     * @param rows       A list of strings representing the grid layout of the map.
+     */
     public Level(String name, String difficulty, List<String> rows) {
         this.name = name;
         this.difficulty = difficulty;
@@ -19,7 +29,11 @@ public class Level {
         return name;
     }
 
-    // getter for difficulty
+    /**
+     * Retrieves the difficulty rating of this level.
+     * 
+     * @return A string representing the difficulty (e.g., "Easy", "Medium", "Hard").
+     */
     public String getDifficulty() {
         return difficulty;
     }
@@ -45,7 +59,6 @@ public class Level {
         return new GameMap(this);
     }
     
-    // Modified static factory method to include a default difficulty parameter (mainly for Fallback levels)
     public static Level of(String name, String difficulty, String... rows) {
         List<String> values = new ArrayList<>();
         for (String row : rows) {
