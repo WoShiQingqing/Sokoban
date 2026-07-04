@@ -2,6 +2,7 @@ package sokoban.entity;
 
 import sokoban.model.Position;
 
+// Player represents the current position controlled by the user
 public class Player extends GameObject {
 
     public Player(Position position) {
@@ -9,7 +10,11 @@ public class Player extends GameObject {
     }
 
     @Override
-    public String getLabel() {
-        return "P";
+    public String getSymbol() {
+        return "@";
+    }
+
+    public void moveTo(Position newPosition) {
+        setPosition(newPosition);
     }
 }

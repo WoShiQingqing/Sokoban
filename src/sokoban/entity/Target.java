@@ -2,6 +2,7 @@ package sokoban.entity;
 
 import sokoban.model.Position;
 
+// Target represents the destination where a box should be pushed
 public class Target extends GameObject {
 
     public Target(Position position) {
@@ -9,7 +10,17 @@ public class Target extends GameObject {
     }
 
     @Override
-    public String getLabel() {
+    public String getSymbol() {
         return ".";
+    }
+
+    @Override
+    public boolean isPassable() {
+        return true;
+    }
+
+    @Override
+    public boolean isTarget() {
+        return true;
     }
 }
