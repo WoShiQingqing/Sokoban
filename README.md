@@ -15,7 +15,6 @@ src/
     view/
 resources/
   levels/
-  images/
 ```
 
 ## What Is Implemented Here
