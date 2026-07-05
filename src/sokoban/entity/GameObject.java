@@ -54,18 +54,3 @@ public abstract class GameObject {
         return false;
     }
 }
-// Newly added: Coordinate modification, required for box pushing and level resetting
-    public void setPosition(Position position) {
-        this.position = position;
-    }
-
-    // Quickly get rows and columns to simplify GameMap code
-    public int getRow() {
-        return position.getRow();
-    }
-    public int getColumn() {
-        return position.getColumn();
-    }
-
-    public abstract String getLabel();
-}
