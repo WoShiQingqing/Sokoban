@@ -24,9 +24,6 @@ public class MenuView {
         Label title = new Label("Sokoban Puzzle Game");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 34));
 
-        Label subtitle = new Label("Architecture and integration build for the coursework project");
-        subtitle.setStyle("-fx-text-fill: #475569;");
-
         Button startButton = createMainButton("Start Game");
         startButton.setOnAction(event -> controller.openLevelSelect());
 
@@ -36,7 +33,7 @@ public class MenuView {
         Button exitButton = createMainButton("Exit");
         exitButton.setOnAction(event -> controller.exitGame());
 
-        VBox content = new VBox(18, title, subtitle, startButton, howToPlayButton, exitButton);
+        VBox content = new VBox(18, title, startButton, howToPlayButton, exitButton);
         content.setAlignment(Pos.CENTER);
         content.setPadding(new Insets(40));
 
